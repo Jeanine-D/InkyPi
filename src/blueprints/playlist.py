@@ -51,6 +51,22 @@ def add_plugin():
                 return jsonify({"error": "Refresh time is required"}), 400
             refresh_config = {"scheduled": refresh_time}
 
+        # Handle max plugin display time
+        max_plugin_display_time = refresh_settings.get('maxPluginDisplayTime')
+        display_time_unit = refresh_settings.get('displayTimeUnit')
+        if max_plugin_display_time and int(max_plugin_display_time) > 0:
+            if display_time_unit not in ["minute", "hour"]:
+                return jsonify({"error": "Display time unit must be 'minute' or 'hour'"}), 400
+            max_plugin_display_time_seconds = calculate_seconds(int(max_plugin_display_time), display_time_unit)
+            refresh_config["max_plugin_display_time"] = max_plugin_display_time_seconds
+
+        # Handle refresh picture with plugin checkbox
+        refresh_picture_with_plugin = refresh_settings.get('refreshPictureWithPlugin')
+        if refresh_picture_with_plugin == 'on':
+            refresh_config["refresh_picture_with_plugin"] = True
+        else:
+            refresh_config["refresh_picture_with_plugin"] = False
+
         plugin_settings.update(handle_request_files(request.files))
         plugin_dict = {
             "plugin_id": plugin_id,

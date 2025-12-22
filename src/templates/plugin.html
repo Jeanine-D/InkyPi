@@ -6,14 +6,14 @@
     <title>{{ plugin.display_name }} Settings</title>
     <script>
         (function() {
-            const theme = localStorage.getItem('inkypi-theme') || 
+            const theme = localStorage.getItem('inkypi-theme') ||
                          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
             if (theme === 'dark') {
                 document.documentElement.setAttribute('data-theme', 'dark');
             }
         })();
     </script>
-    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/main.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/main.css') }}">
     <script src="{{ url_for('static', filename='scripts/dark_mode.js') }}"></script>
     <script src="{{ url_for('static', filename='scripts/response_modal.js') }}"></script>
     <!-- Select2 CSS -->
@@ -22,6 +22,182 @@
     <script src="{{ url_for('static', filename='scripts/jquery.min.js') }}"></script>
     <!-- Select2 JS -->
     <script src="{{ url_for('static', filename='scripts/select2.min.js') }}"></script>
+    <style>
+        /* Enhanced modal styling for wider Add to Playlist modal */
+        .modal-content.modal-wide {
+            max-width: 650px;
+            width: 90%;
+            margin: 2vh auto;
+            padding: 25px;
+            max-height: 95vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-content.modal-wide h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+
+        .modal-content.modal-wide .separator {
+            flex-shrink: 0;
+        }
+
+        .modal-content.modal-wide .settings-form {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 0;
+        }
+
+        .modal-content.modal-wide .buttons-container {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-light);
+            flex-shrink: 0;
+        }
+
+        /* Enhanced form section styling */
+        .form-section {
+            background-color: var(--collapsible-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .form-section-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-height: 700px) {
+            .modal-content.modal-wide {
+                margin: 1vh auto;
+                padding: 20px;
+                max-height: 98vh;
+            }
+
+            .modal-content.modal-wide h2 {
+                font-size: 1.3rem;
+                margin-bottom: 10px;
+            }
+
+            .form-section {
+                padding: 12px;
+                margin-bottom: 10px;
+            }
+
+            .form-section-title {
+                font-size: 1rem;
+                margin-bottom: 10px;
+            }
+
+            .modal-content .form-group {
+                margin: 10px 0;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .modal-content.modal-wide {
+                width: 95%;
+                padding: 20px;
+            }
+        }
+
+        /* Improved collapsible styling */
+        .collapsible-header {
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px var(--shadow-light);
+        }
+
+        .collapsible-header:hover {
+            background-color: var(--button-hover);
+        }
+
+        /* Card-style container for plugin settings */
+        .settings-card {
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px var(--shadow-light);
+        }
+
+        /* Enhanced button styling */
+        .action-button {
+            box-shadow: 0 4px 6px var(--shadow-light);
+            transition: all 0.3s ease;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px var(--shadow-medium);
+        }
+
+        /* Improved file upload area */
+        .file-upload-area {
+            border: 2px dashed var(--border-subtle);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--accent-primary);
+            background-color: var(--collapsible-bg);
+        }
+
+        /* Better spacing for form groups in modal */
+        .modal-content .form-group {
+            margin: 15px 0;
+        }
+
+        /* Refresh type radio groups styling */
+        .refresh-type-group {
+            background-color: var(--bg-secondary);
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-subtle);
+            transition: all 0.3s ease;
+        }
+
+        .refresh-type-group:hover {
+            border-color: var(--accent-primary);
+            background-color: var(--collapsible-bg);
+        }
+
+        .refresh-type-group.active {
+            border-color: var(--accent-primary);
+            background-color: var(--collapsible-bg);
+        }
+
+        /* Icon enhancements */
+        .info-icon {
+            cursor: help;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* Better visual hierarchy */
+        .back-button {
+            box-shadow: 0 2px 4px var(--shadow-light);
+        }
+
+        .back-button:hover {
+            transform: translateX(-2px);
+        }
+    </style>
 
     <script>
         const pluginSettings = {{ plugin_settings | tojson if plugin_settings else {} }};
@@ -370,42 +546,73 @@
 
     <!-- Schedule Configuration Modal -->
     <div id="scheduleModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content modal-wide">
             <span class="close-button" onclick="closeModal('scheduleModal')">×</span>
             <h2>Add to Playlist</h2>
             <div class="separator"></div>
             <form id="scheduleForm" class="settings-form">
-                <div class="form-group">
-                    <label for="playlist" class="form-label">Playlist:</label>
-                    <select id="playlist" name="playlist" class="form-input">
-                        {% for playlist_name in playlists %}
-                        <option value="{{playlist_name}}">{{playlist_name}}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="instance" class="form-label">Instance Name:</label>
-                    <input type="text" id="instance" name="instance_name" placeholder="Type something..." required class="form-input">
-                </div>
-                <div class="form-group">
-                    <label>Refresh</label>
-                    <span title="Determines how often the data and image should be refreshed.">ⓘ</span>
-                </div>
-                <div class="form-group nowrap" id="group-interval">
-                  <input type="radio" name="refreshType" id="refresh-interval" value="interval" checked>
-                  <label for="refresh-interval">Every</label>
-                  <input type="number" id="interval" name="interval" class="form-input" required min="1" placeholder="Enter a number">
-                  <select id="unit" name="unit" class="form-input" required>
-                    <option value="minute">Minute</option>
-                    <option value="hour">Hour</option>
-                    <option value="day">Day</option>
-                  </select>
+                <!-- Basic Information Section -->
+                <div class="form-section">
+                    <div class="form-section-title">Basic Information</div>
+                    <div class="form-group">
+                        <label for="playlist" class="form-label">Playlist:</label>
+                        <select id="playlist" name="playlist" class="form-input">
+                            {% for playlist_name in playlists %}
+                            <option value="{{playlist_name}}">{{playlist_name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="instance" class="form-label">Instance Name:</label>
+                        <input type="text" id="instance" name="instance_name" placeholder="Enter a unique name..." required class="form-input">
+                    </div>
                 </div>
 
-                <div class="form-group nowrap" id="group-scheduled">
-                  <input type="radio" name="refreshType" id="refresh-scheduled" value="scheduled">
-                  <label for="refresh-scheduled">Daily at</label>
-                  <input id="scheduled" class="time-input" type="time" name="refreshTime" step="900">
+                <!-- Refresh Settings Section -->
+                <div class="form-section">
+                    <div class="form-section-title">
+                        Refresh Settings
+                        <span class="info-icon" title="Determines how often the data and image should be refreshed.">ⓘ</span>
+                    </div>
+
+                    <div class="refresh-type-group" id="group-interval">
+                        <div class="form-group nowrap">
+                            <input type="radio" name="refreshType" id="refresh-interval" value="interval" checked>
+                            <label for="refresh-interval">Every</label>
+                            <input type="number" id="interval" name="interval" class="form-input" required min="1" placeholder="Enter a number">
+                            <select id="unit" name="unit" class="form-input" required>
+                                <option value="minute">Minute</option>
+                                <option value="hour">Hour</option>
+                                <option value="day">Day</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="refresh-type-group" id="group-scheduled" style="margin-top: 10px;">
+                        <div class="form-group nowrap">
+                            <input type="radio" name="refreshType" id="refresh-scheduled" value="scheduled">
+                            <label for="refresh-scheduled">Daily at</label>
+                            <input id="scheduled" class="time-input" type="time" name="refreshTime" step="900">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Display Settings Section -->
+                <div class="form-section">
+                    <div class="form-section-title">Display Settings</div>
+                    <div class="form-group nowrap">
+                        <label for="maxPluginDisplayTime" class="form-label">Instance Display Time:</label>
+                        <input type="number" id="maxPluginDisplayTime" name="maxPluginDisplayTime" class="form-input" min="0" value="0" placeholder="0">
+                        <select id="displayTimeUnit" name="displayTimeUnit" class="form-input">
+                            <option value="minute">Minute</option>
+                            <option value="hour">Hour</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="refreshPictureWithPlugin" class="form-label">Trigger picture refresh with plugin refresh</label>
+                        <input type="checkbox" id="refreshPictureWithPlugin" name="refreshPictureWithPlugin">
+                    </div>
                 </div>
 
                 <script>
@@ -420,9 +627,21 @@
                     const radioScheduled = document.getElementById('refresh-scheduled');
                     const inputScheduled = document.getElementById('scheduled');
 
+                    // Helper to update active states
+                    const updateActiveStates = () => {
+                      if (radioInterval.checked) {
+                        groupInterval.classList.add('active');
+                        groupScheduled.classList.remove('active');
+                      } else {
+                        groupInterval.classList.remove('active');
+                        groupScheduled.classList.add('active');
+                      }
+                    };
+
                     // Helper to activate a group
                     const activateGroup = (radio, input) => {
                       radio.checked = true;
+                      updateActiveStates();
                       // Focus after a short delay to ensure radio updates visually
                       setTimeout(() => input.focus(), 0);
                     };
@@ -443,8 +662,17 @@
                     radioScheduled.addEventListener('click', () => activateGroup(radioScheduled, inputScheduled));
 
                     // Focusing inputs → auto-select their radio
-                    inputInterval.addEventListener('focus', () => (radioInterval.checked = true));
-                    inputScheduled.addEventListener('focus', () => (radioScheduled.checked = true));
+                    inputInterval.addEventListener('focus', () => {
+                      radioInterval.checked = true;
+                      updateActiveStates();
+                    });
+                    inputScheduled.addEventListener('focus', () => {
+                      radioScheduled.checked = true;
+                      updateActiveStates();
+                    });
+
+                    // Initialize active state
+                    updateActiveStates();
                   });
                 </script>
 
